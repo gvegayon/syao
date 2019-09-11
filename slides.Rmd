@@ -1,0 +1,145 @@
+---
+title: "SYAO: Simulating your troubles off"
+author: "George G Vega Yon"
+date: "9/10/2019"
+output:
+  slidy_presentation:
+    incremental: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## What
+
+- Math is great... but it can be hard
+
+- R is great too... but it can also be a bit hard (at first!)
+
+- What is harder? Well it depends on you!
+
+- Either way, between R and Math it is always safe
+
+## Example 1
+
+Adapted from From Ch. 3 of BH
+
+An airline overbooks a flight, selling more tickets for the flight than there
+are seats on the plane (figuring that it’s likely that some people won’t show
+up). The plane has 105 seats, and 110 people have booked the flight. Each
+person will show up for the flight with probability 0.95, independently. Find
+the probability that there will be enough seats for everyone who shows up for
+the flight.
+
+## Example 1: Solution using math
+
+- What is this distribution?
+
+- Using R, how can we solve this?
+
+- Since $X$, the number of passangers that show up, is binomial with parameters
+  (110, .95), the probability that the flight is room for all is the sum of pmfs
+  
+  ```r
+  n <- 110
+  k <- 105
+  p <- .95
+  idx <- (k + 1):n 
+  1 - sum(choose(n, idx)*p^idx*(1 - p)^(n - idx))
+  ```
+- How about using a single line of code?
+  
+  `pbinom(105, 110, .95)`
+  
+## Example 1: Solution using simulations in R
+
+- This is more interesting!
+
+- We need to make enough experiments so we can approximate hte solution
+
+- Here is some pseudo-code you can follow:
+
+  0.  Set up the seed and the parameters.
+
+  1.  Write out the function that retunrs the statistic of interest
+  
+  2.  Put that function in a for-loop / or similar, and repeat the experiment
+      thousands of times.
+      
+  3.  Return and avarage out the results.
+
+
+## Example 1: Solution using simulations in R (cont' d)
+
+```{r example1, eval=TRUE, echo=TRUE}
+# 0. Seed and parametrs
+n <- 110
+k <- 105
+p <- .95
+
+# 1. Simulation that performs the experiment
+sim <- function(n) {
+  arrive <- sample(0:1, n, TRUE, c(1-p,p))
+  sum(arrive)
+}
+
+# 2. Do the for-loop
+res <- replicate(50000, sim(n))
+
+# 3. Return and average the results
+mean(res <= k)  # Obtained
+pbinom(k, n, p) # Expected
+```
+
+## Example 2: The party {style="font-size: 10pt"}
+
+You have been invited to a party in which the host is giving away a present. Sited in round table, the host, you and 8 other guests pass the present around to either of your neighbors depending on what a fair (or not) coin tells the current gift holder:
+
+Heads: Pass it to the left
+Tails: Pass it to the right
+The host, who seats in the first chair, holds the present first. Whoever gets to get the present last wins the game and gets to keep it!
+
+Since you are the host's best friend, he allows you to pick the chair first. The question: What chair will you pick? The one to the left of the host, the one to the right, or one that is the farthest away from him?
+
+Write down a function to simulate the game, and plot the distribution of the number of times that each one of the chairs 2 to 10 gets the present last.
+
+Checkout the code [here](https://github.com/USCbiostats/rbootcamp/blob/983d1f22af1d33f3df159d874080692321d903bf/projects/06-party/party.r)
+
+## Example 3: Monopoly {style="text-align:center; margin:auto"}
+
+Mono-what?
+
+<img src="https://upload.wikimedia.org/wikipedia/en/f/f9/Monopoly_pack_logo.png" style="width:400px;align:text-align:center" alt="Monopoly logo"/>
+
+> In the game, players roll two six-sided dice to move around the game board, buying and trading properties, and developing them with houses and hotels. Players collect rent from their opponents, with the goal being to drive them into bankruptcy. ([wiki](https://en.wikipedia.org/wiki/Monopoly_(game)))
+
+## Example 3: Rules of Monopoly
+
+What should be the best strategy to play Monopoly (in terms of property
+purchase)? A question that has keep be awake several nights. The idea is to create
+a simulation function that provides a solution to this problem. To do so, you
+need to consider the following:
+
+1.  Users throw 2 six-sided-die at the same time to advance.
+
+2.  There are 40 possible spots to fall on.
+
+3.  When users fall in chance/community chest spots, there are some cards
+    that may ask them to move around the board (that changes everything!).
+    
+4.  If the player hits double three times in a row, he goes imidiately to jail
+    (more on die rules [here](http://monopoly.wikia.com/wiki/Die)).
+
+---
+
+To ease the simulation, assume that:
+
+1.  There's only a single player (saad)
+
+2.  Tthe player has infinite resources (in other words, don't mess with bankrupcy
+    rules), and
+    
+3.  The game ends at the turn number 500.
+
+Checkout the solution to this problem [here](https://github.com/USCbiostats/rbootcamp/blob/983d1f22af1d33f3df159d874080692321d903bf/projects/04-monopoly-game/monopoly.r)
